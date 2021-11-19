@@ -36,7 +36,7 @@ public class Service01Stack extends Stack {
                         //Container informations
                         ApplicationLoadBalancedTaskImageOptions.builder()
                                 .containerName("aws_project01")
-                                .image(ContainerImage.fromRegistry("pedrospiet/aws_training_01:1.0.0")) //Your repository on dockerHub
+                                .image(ContainerImage.fromRegistry("pedrospiet/aws_training_01:1.0.4")) //Your repository on dockerHub
                                 .containerPort(8080)
                                 .logDriver(LogDriver.awsLogs(AwsLogDriverProps.builder()
                                         .logGroup(LogGroup.Builder.create(this, "Service01LogGroup")

@@ -9,6 +9,7 @@ import java.util.Collections;
 // import software.amazon.awscdk.core.Duration;
 
 public class RdsStack extends Stack {
+
     public RdsStack(final Construct scope, final String id, Vpc vpc) {
         this(scope, id, null, vpc);
     }
@@ -52,6 +53,7 @@ public class RdsStack extends Stack {
                         .build())
                 .build();
 
+
         // exporting our parameters, if others stacks need
 
         //exporting the database endpoint
@@ -66,5 +68,6 @@ public class RdsStack extends Stack {
                 .value(dabasePassword.getValueAsString())
                 .build();
     }
-
 }
+
+

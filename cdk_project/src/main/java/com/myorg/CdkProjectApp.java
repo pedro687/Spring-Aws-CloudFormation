@@ -12,7 +12,7 @@ public class CdkProjectApp {
 
         VpcStack vpcStack = new VpcStack(app, "Vpc");
 
-        ClusterStack clusterStack = new ClusterStack(app, "Cluster", vpcStack.getVpc());
+        ClusterStack clusterStack = new ClusterStack(app, "Cluster", null, vpcStack.getVpc());
         clusterStack.addDependency(vpcStack);
 
         RdsStack rdsStack = new RdsStack(app, "Rds", vpcStack.getVpc());

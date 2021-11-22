@@ -1,9 +1,6 @@
 package com.myorg;
 
-import software.amazon.awscdk.core.Construct;
-import software.amazon.awscdk.core.RemovalPolicy;
-import software.amazon.awscdk.core.Stack;
-import software.amazon.awscdk.core.StackProps;
+import software.amazon.awscdk.core.*;
 import software.amazon.awscdk.services.ec2.Vpc;
 import software.amazon.awscdk.services.ecs.AwsLogDriverProps;
 import software.amazon.awscdk.services.ecs.Cluster;
@@ -13,10 +10,15 @@ import software.amazon.awscdk.services.ecs.patterns.ApplicationLoadBalancedFarga
 import software.amazon.awscdk.services.ecs.patterns.ApplicationLoadBalancedTaskImageOptions;
 import software.amazon.awscdk.services.elasticloadbalancingv2.HealthCheck;
 import software.amazon.awscdk.services.logs.LogGroup;
+
+import java.util.HashMap;
+import java.util.Map;
 // import software.amazon.awscdk.services.sqs.Queue;
 // import software.amazon.awscdk.core.Duration;
 
 public class Service01Stack extends Stack {
+
+    // Specify the cluster
     public Service01Stack(final Construct scope, final String id, Cluster cluster) {
         this(scope, id, null, cluster);
     }
@@ -24,19 +26,32 @@ public class Service01Stack extends Stack {
     public Service01Stack(final Construct scope, final String id, final StackProps props, Cluster cluster) {
         super(scope, id, props);
 
+
+        /*
+         *Adding Database Username, Endpoint and password in our enviroments
+         *
+         */
+        Map<String, String> envVariables = new HashMap<>();
+        envVariables.put("SPRING_DATASOURCE_URL", "jdbc:mariadb://"
+                + Fn.importValue("rds-endpoint")
+                + ":3306/aws_spring01?createDatabaseIfNotExist=true");
+        envVariables.put("SPRING_DATASOURCE_USERNAME", "admin");
+        envVariables.put("SPRING_DATASOURCE_PASSWORD", Fn.importValue("rds-password"));
+
         ApplicationLoadBalancedFargateService service01 = ApplicationLoadBalancedFargateService
                 .Builder
                 .create(this, "ALB-01")
                 .serviceName("service-01")
                 .cluster(cluster)
-                .cpu(512) // how much cpu we will use
+                .cpu(512) // how much cpu we need use
                 .desiredCount(2) // how much instances we want
+                .listenerPort(8080)
                 .memoryLimitMiB(1024)
                 .taskImageOptions(
                         //Container informations
                         ApplicationLoadBalancedTaskImageOptions.builder()
-                                .containerName("aws_project01")
-                                .image(ContainerImage.fromRegistry("pedrospiet/aws_training_01:1.0.4")) //Your repository on dockerHub
+                                .containerName("aws_treinamento01")
+                                .image(ContainerImage.fromRegistry("pedrospiet/aws_treinamento01:1.0.1")) //Your repository on dockerHub
                                 .containerPort(8080)
                                 .logDriver(LogDriver.awsLogs(AwsLogDriverProps.builder()
                                         .logGroup(LogGroup.Builder.create(this, "Service01LogGroup")
@@ -45,9 +60,12 @@ public class Service01Stack extends Stack {
                                                 .build()
                                         ).streamPrefix("Service01")
                                         .build()))
+                                .environment(envVariables) // adding enviroments
                                 .build()
                 ).publicLoadBalancer(true)
                 .build();
+
+
 
         service01.getTargetGroup().configureHealthCheck(new HealthCheck.Builder()
                 .path("/actuator/health")
@@ -55,7 +73,7 @@ public class Service01Stack extends Stack {
                 .healthyHttpCodes("200")
                 .build());
 
-       /* ScalableTaskCount scalableTaskCount = service01.getService().autoScaleTaskCount(EnableScalingProps.builder()
+     /*   ScalableTaskCount scalableTaskCount = service01.getService().autoScaleTaskCount(EnableScalingProps.builder()
                 .minCapacity(2)
                 .maxCapacity(4)
                 .build());
@@ -64,7 +82,9 @@ public class Service01Stack extends Stack {
                 .targetUtilizationPercent(50)
                 .scaleInCooldown(Duration.seconds(60))
                 .scaleOutCooldown(Duration.seconds(60))
-                .build());*/
+                .build());
+      */
     }
+
 
 }

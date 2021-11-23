@@ -25,7 +25,7 @@ public class RdsStack extends Stack {
 
         //Configuring Security Group to use port 3306
         ISecurityGroup iSecurityGroup = SecurityGroup.fromSecurityGroupId(this, id, vpc.getVpcDefaultSecurityGroup());
-        iSecurityGroup.addEgressRule(Peer.anyIpv4(), Port.tcp(3306));
+        iSecurityGroup.addIngressRule(Peer.anyIpv4(), Port.tcp(3306));
 
         DatabaseInstance databaseInstance = DatabaseInstance.Builder
                 .create(this, "Rds01")
@@ -69,5 +69,3 @@ public class RdsStack extends Stack {
                 .build();
     }
 }
-
-

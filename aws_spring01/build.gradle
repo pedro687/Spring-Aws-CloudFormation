@@ -38,7 +38,7 @@ repositories {
 }
 
 bootJar {
-    baseName = 'depressao_trevas_dor'
+    baseName = 'aws_training'
     version = '1.0.0'
 }
 
@@ -60,8 +60,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 // https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client
-// https://mvnrepository.com/artifact/mysql/mysql-connector-java
-    implementation group: 'mysql', name: 'mysql-connector-java', version: '5.1.6'
+    implementation group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: '2.7.0'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

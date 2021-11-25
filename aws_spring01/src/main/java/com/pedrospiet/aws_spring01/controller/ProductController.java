@@ -1,7 +1,9 @@
 package com.pedrospiet.aws_spring01.controller;
 
+import com.pedrospiet.aws_spring01.enums.EventType;
 import com.pedrospiet.aws_spring01.model.Product;
 import com.pedrospiet.aws_spring01.repository.ProductRepository;
+import com.pedrospiet.aws_spring01.service.ProductPublisherEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +15,14 @@ import java.util.Optional;
 @RequestMapping(value = "/v1/products")
 public class ProductController {
 
+    private ProductPublisherEvent productPublisherEvent;
+
+    @Autowired
+    public ProductController(ProductRepository productRepository, ProductPublisherEvent productPublisherEvent) {
+        this.productRepository = productRepository;
+        this.productPublisherEvent = productPublisherEvent;
+    }
+
     @Autowired
     private ProductRepository productRepository;
 
@@ -22,6 +32,7 @@ public class ProductController {
         product.setId(null);
         Product productCreated = productRepository.save(product);
 
+        productPublisherEvent.publishProductEvent(product, EventType.PRODUCT_CREATED, "Pedro");
         return new ResponseEntity<Product>(productCreated,
                 HttpStatus.CREATED);
     }
@@ -33,6 +44,7 @@ public class ProductController {
             Product product = optProduct.get();
 
             productRepository.delete(product);
+            productPublisherEvent.publishProductEvent(product, EventType.PRODUCT_DELETED, "Pedro");
 
             return new ResponseEntity<Product>(product, HttpStatus.OK);
         } else {
@@ -54,6 +66,7 @@ public class ProductController {
             product.setId(id);
 
             Product productUpdated = productRepository.save(product);
+            productPublisherEvent.publishProductEvent(product, EventType.PRODUCT_UPDATED, "Pedro");
 
             return new ResponseEntity<Product>(productUpdated,
                     HttpStatus.OK);

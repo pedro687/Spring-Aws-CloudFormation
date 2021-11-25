@@ -9,6 +9,7 @@ import software.amazon.awscdk.services.ecs.LogDriver;
 import software.amazon.awscdk.services.ecs.patterns.ApplicationLoadBalancedFargateService;
 import software.amazon.awscdk.services.ecs.patterns.ApplicationLoadBalancedTaskImageOptions;
 import software.amazon.awscdk.services.elasticloadbalancingv2.HealthCheck;
+import software.amazon.awscdk.services.events.targets.SnsTopic;
 import software.amazon.awscdk.services.logs.LogGroup;
 
 import java.util.HashMap;
@@ -19,11 +20,11 @@ import java.util.Map;
 public class Service01Stack extends Stack {
 
     // Specify the cluster
-    public Service01Stack(final Construct scope, final String id, Cluster cluster) {
-        this(scope, id, null, cluster);
+    public Service01Stack(final Construct scope, final String id, Cluster cluster, SnsTopic snsTopic) {
+        this(scope, id, null, cluster, snsTopic);
     }
 
-    public Service01Stack(final Construct scope, final String id, final StackProps props, Cluster cluster) {
+    public Service01Stack(final Construct scope, final String id, final StackProps props, Cluster cluster, SnsTopic snsTopic) {
         super(scope, id, props);
 
 
@@ -38,6 +39,10 @@ public class Service01Stack extends Stack {
         envVariables.put("SPRING_DATASOURCE_USERNAME", "admin");
         envVariables.put("SPRING_DATASOURCE_PASSWORD", Fn.importValue("rds-password"));
 
+        envVariables.put("AWS_REGION", "us-east-1");
+        envVariables.put("AWS_SNS_TOPIC_PRODUCT_EVENTS_ARN", snsTopic.getTopic().getTopicArn());
+
+
         ApplicationLoadBalancedFargateService service01 = ApplicationLoadBalancedFargateService
                 .Builder
                 .create(this, "ALB-01")
@@ -51,7 +56,7 @@ public class Service01Stack extends Stack {
                         //Container informations
                         ApplicationLoadBalancedTaskImageOptions.builder()
                                 .containerName("aws_treinamento01")
-                                .image(ContainerImage.fromRegistry("pedrospiet/aws_training:1.0.0")) //Your repository on dockerHub
+                                .image(ContainerImage.fromRegistry("pedrospiet/aws_training:1.0.4")) //Your repository on dockerHub
                                 .containerPort(8080)
                                 .logDriver(LogDriver.awsLogs(AwsLogDriverProps.builder()
                                         .logGroup(LogGroup.Builder.create(this, "Service01LogGroup")
@@ -84,6 +89,8 @@ public class Service01Stack extends Stack {
                 .scaleOutCooldown(Duration.seconds(60))
                 .build());
       */
+
+        snsTopic.getTopic().grantPublish(service01.getTaskDefinition().getTaskRole());
     }
 
 

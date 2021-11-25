@@ -39,7 +39,7 @@ repositories {
 
 bootJar {
     baseName = 'aws_training'
-    version = '1.0.3'
+    version = '1.0.4'
 }
 
 task unpack(type: Copy) {

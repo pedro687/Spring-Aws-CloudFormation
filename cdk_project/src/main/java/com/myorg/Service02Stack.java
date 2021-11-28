@@ -13,16 +13,48 @@ import software.amazon.awscdk.services.ecs.patterns.ApplicationLoadBalancedTaskI
 import software.amazon.awscdk.services.elasticloadbalancingv2.HealthCheck;
 import software.amazon.awscdk.services.events.targets.SnsTopic;
 import software.amazon.awscdk.services.logs.LogGroup;
+import software.amazon.awscdk.services.sns.subscriptions.SqsSubscription;
+import software.amazon.awscdk.services.sqs.DeadLetterQueue;
+import software.amazon.awscdk.services.sqs.Queue;
+
+import java.util.HashMap;
+import java.util.Map;
 // import software.amazon.awscdk.services.sqs.Queue;
 // import software.amazon.awscdk.core.Duration;
 
 public class Service02Stack extends Stack {
-    public Service02Stack(final Construct scope, final String id, Cluster cluster) {
-        this(scope, id, null, cluster);
+    public Service02Stack(final Construct scope, final String id, Cluster cluster, SnsTopic productEventsTopic) {
+        this(scope, id, null, cluster, productEventsTopic);
     }
 
-    public Service02Stack(final Construct scope, final String id, final StackProps props, Cluster cluster) {
+    public Service02Stack(final Construct scope, final String id, final StackProps props, Cluster cluster, SnsTopic productEventsTopic) {
         super(scope, id, props);
+
+        //Criando fila da DLQ
+     Queue productEventsDlq = Queue.Builder.create(this, "ProductEventsDlq")
+            .queueName("product-events-dlq")
+            .build();
+
+     //Criando DLQ e adicionando nela a fila de dlq
+        DeadLetterQueue deadLetterQueue = DeadLetterQueue.builder()
+                .queue(productEventsDlq)
+                .maxReceiveCount(2)
+                .build();
+
+
+        Queue productEvents = Queue.Builder.create(this, "ProductEvents")
+                .queueName("product-events")
+                .deadLetterQueue(deadLetterQueue) // Definindo DLQ para quando uma mensagem der erro 3 vezes, ela será redirecionada para a DLQ
+                .build();
+
+        Map<String, String> envVariables = new HashMap<>();
+
+        //inscrevendo fila no SNS
+        SqsSubscription sqsSubscription = SqsSubscription.Builder.create(productEvents).build();
+        productEventsTopic.getTopic().addSubscription(sqsSubscription);
+
+        envVariables.put("AWS_REGION", "us-east-1");
+        envVariables.put("AWS_QUEUE_PRODUCT_EVENTS_NAME", productEvents.getQueueName());
 
         ApplicationLoadBalancedFargateService service02 = ApplicationLoadBalancedFargateService
                 .Builder
@@ -45,7 +77,7 @@ public class Service02Stack extends Stack {
                                                 .removalPolicy(RemovalPolicy.DESTROY)
                                                 .build()
                                         ).streamPrefix("Service02")
-                                        .build()))
+                                        .build())).environment(envVariables)
                                 .build()
                 ).publicLoadBalancer(true)
                 .build();

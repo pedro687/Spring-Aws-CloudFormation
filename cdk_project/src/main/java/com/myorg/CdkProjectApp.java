@@ -26,8 +26,10 @@ public class CdkProjectApp {
         service01Stack.addDependency(snsStack); // depends sns
         service01Stack.addDependency(snsStack);
 
-        Service02Stack service02Stack = new Service02Stack(app, "Service02", clusterStack.getCluster());
+        Service02Stack service02Stack = new Service02Stack(app, "Service02", clusterStack.getCluster(), snsStack.getSnsTopic());
         service02Stack.addDependency(clusterStack);
+        service02Stack.addDependency(snsStack);
+
         app.synth();
     }
 }

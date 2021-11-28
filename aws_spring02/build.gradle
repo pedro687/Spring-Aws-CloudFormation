@@ -39,7 +39,7 @@ repositories {
 
 bootJar {
     baseName = 'aws_training02'
-    version = '1.0.1'
+    version = '1.0.2'
 }
 
 task unpack(type: Copy) {
@@ -58,6 +58,12 @@ docker {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    // https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-sqs
+    implementation group: 'com.amazonaws', name: 'aws-java-sdk-sqs', version: '1.11.959'
+    // https://mvnrepository.com/artifact/org.springframework/spring-jms
+    implementation group: 'org.springframework', name: 'spring-jms', version: '5.3.4'
+    // https://mvnrepository.com/artifact/com.amazonaws/amazon-sqs-java-messaging-lib
+    implementation group: 'com.amazonaws', name: 'amazon-sqs-java-messaging-lib', version: '1.0.8'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'

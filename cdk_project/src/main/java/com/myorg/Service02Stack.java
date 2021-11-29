@@ -69,7 +69,7 @@ public class Service02Stack extends Stack {
                         //Container informations
                         ApplicationLoadBalancedTaskImageOptions.builder()
                                 .containerName("aws_treinamento01")
-                                .image(ContainerImage.fromRegistry("pedrospiet/aws_training02:1.0.2")) //Your repository on dockerHub
+                                .image(ContainerImage.fromRegistry("pedrospiet/aws_training02:1.0.3")) //Your repository on dockerHub
                                 .containerPort(9090)
                                 .logDriver(LogDriver.awsLogs(AwsLogDriverProps.builder()
                                         .logGroup(LogGroup.Builder.create(this, "Service02LogGroup")
@@ -88,5 +88,7 @@ public class Service02Stack extends Stack {
                 .port("8080")
                 .healthyHttpCodes("200")
                 .build());
+
+        productEvents.grantConsumeMessages(service02.getTaskDefinition().getTaskRole());
     }
 }
